@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     sync_pull_interval: int = 300
     allow_destructive: bool = False
     port: int = 8000
+    allowed_host: str
 
 
 settings = Settings()
