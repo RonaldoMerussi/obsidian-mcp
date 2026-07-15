@@ -4,14 +4,13 @@ from mcp.server.transport_security import TransportSecuritySettings
 from . import tools
 from .auth import BearerAuthMiddleware
 from .config import settings
-from src import tools
-from src.config import settings
+
 
 mcp = FastMCP(
     "obsidian-tools",
     transport_security=TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
-        allowed_host=[settings.allowed_host, "localhost:*", "127.0.0.1:*"],
+        allowed_hosts=[settings.allowed_host, "localhost:*", "127.0.0.1:*"],
         allowed_origins=[f"https://{settings.allowed_host}", "http://localhost:*"],
     ),
 )
