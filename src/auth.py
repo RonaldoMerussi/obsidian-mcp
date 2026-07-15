@@ -1,5 +1,6 @@
 from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette.responses import PlainTextResponse
+import secrets
 
 from .config import settings
 
@@ -19,7 +20,7 @@ class BearerAuthMiddleware:
         auth_header = headers.get(b"authorization", b"").decode()
         expected = f"Bearer {settings.mcp_auth_token}"
 
-        if auth_header != expected:
+        if not secrets.compare_digest(auth_header, expected):
             response = PlainTextResponse("Unauthorized", status_code=401)
             await response(scope, receive, send)
             return

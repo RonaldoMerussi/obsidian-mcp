@@ -8,7 +8,7 @@ class SyncConflictError(Exception):
 
 
 def _repo() -> Repo:
-    return Repo(settings.vault_path)
+    return Repo(settings.vault_path, search_parent_directories=True)
 
 
 def sync_pull() -> None:

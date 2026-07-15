@@ -1,12 +1,5 @@
-"""The 5 v1 MCP tools. Contract per SPEC section 9.
-
-TODO(ronaldo): implement the bodies below, wiring vault.py + sync.py together.
-Each tool must return a structured {"error": "..."} dict instead of raising,
-per the SPEC's error-handling requirement.
-"""
-
 from . import vault
-##from .sync import sync_pull, sync_write
+from .sync import sync_pull, sync_write
 
 
 
@@ -75,7 +68,9 @@ def write_note(path: str, content: str, frontmatter: dict | None = None) -> dict
     Erros: 409 se o arquivo já existir e ALLOW_DESTRUCTIVE for false.
     """
     try:
+        sync_pull()
         vault.write_note(path, content, frontmatter)
+        sync_write(f"update: {path}")
         return {"path": path, "created": True}
     except vault.UnsafePathError as e:
         return{"error":str(e), "code": "unsafe_path_error"}
@@ -92,7 +87,9 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
     Erros: 404 se o heading não existir.
     """
     try:
+        sync_pull()
         vault.replace_section(path, heading, new_content, mode)
+        sync_write(f"update: {path}")
         return {"path": path, "updated": True, "heading": heading}
     except vault.UnsafePathError as e:
         return{"error":str(e), "code": "unsafe_path_error"}
