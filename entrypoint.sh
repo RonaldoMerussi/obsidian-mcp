@@ -3,7 +3,7 @@ set -e
 
 # 1. escrever a chave SSH que veio por env var
 mkdir -p /root/.ssh
-echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
+echo "$SSH_PRIVATE_KEY_B64" | base64 -d > /root/.ssh/id_ed25519
 chmod 600 /root/.ssh/id_ed25519
 ssh-keyscan github.com >> /root/.ssh/known_hosts
 
