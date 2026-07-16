@@ -125,3 +125,14 @@ def test_search_notes_finds_by_content(tmp_path, monkeypatch):
     resultados = search_notes("python")
     assert len(resultados) == 1
     assert resultados[0].path == "nota1.md"
+
+def test_replace_section_rejects_content_with_heading(tmp_path, monkeypatch):
+    monkeypatch.setattr("src.vault.settings.vault_path", tmp_path)
+    nota = """# Titulo
+
+## Ideias
+texto antigo"""
+    (tmp_path / "nota.md").write_text(nota, encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        replace_section("nota.md", "## Ideias", "## Ideias\ntexto novo")

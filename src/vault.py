@@ -107,6 +107,8 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
         if lines[i].startswith("#"):
             end_index = i
             break
+    if new_content.strip().startswith(heading):
+        raise ValueError(f"new_content não deve começar com {heading} - ele é preservado automaticamente")
     if mode == "append":
         middle = lines[start_index+1:end_index]
         new_text = "\n".join(lines[:start_index+1] + middle + [new_content] + lines[end_index:])
