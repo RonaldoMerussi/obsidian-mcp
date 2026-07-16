@@ -2,7 +2,7 @@
 
 Servidor MCP que expõe um vault do Obsidian (busca, leitura, criação e atualização de notas) via Streamable HTTP.
 
-Ver a SPEC completa na nota do vault: `01-Projetos/Servidor MCP do Obsidian.md`.
+
 
 ## Status
 
