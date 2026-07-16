@@ -121,10 +121,10 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
         return{"error":str(e), "code": "heading_not_found"}
     except SyncConflictError as e:
         return {"error": str(e), "code": "sync_conflict"}
-    except ValueError as e:
-        return {"error": str(e), "code": "invalid_content"}
     except AmbiguousHeadingError as e:
         return {"error": str(e), "code": "ambiguous_heading"}
+    except ValueError as e:
+        return {"error": str(e), "code": "invalid_content"}
     except Exception as e:
         return {"error": f"{type(e).__name__}:{str(e)}", "code": "internal_error"}
     
