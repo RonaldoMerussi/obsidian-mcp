@@ -83,7 +83,7 @@ def write_note(path: str, content: str, frontmatter: dict | None = None) -> dict
         return {"error": f"{type(e).__name__}:{str(e)}", "code": "internal_error"}
 
 
-def replace_section(path: str, heading: str, new_content: str, mode: str = "replace") -> dict:
+def replace_section(path: str, heading: str, new_content: str, mode: str = "replace", occurrence: int | None = None) -> dict:
     """Substitui ou anexa conteúdo em uma seção específica de uma nota.
 
     Use quando quiser editar apenas uma parte da nota, sem tocar no resto.
@@ -112,7 +112,7 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
     """
     try:
         sync_pull()
-        vault.replace_section(path, heading, new_content, mode)
+        vault.replace_section(path, heading, new_content, mode, occurrence)
         sync_write(f"update: {path}")
         return {"path": path, "updated": True, "heading": heading}
     except vault.UnsafePathError as e:
