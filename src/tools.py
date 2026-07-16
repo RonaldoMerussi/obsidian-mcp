@@ -83,11 +83,23 @@ def write_note(path: str, content: str, frontmatter: dict | None = None) -> dict
 
 
 def replace_section(path: str, heading: str, new_content: str, mode: str = "replace") -> dict:
-    """Edição cirúrgica: encontra um `## heading` e substitui ou adiciona o conteúdo da seção.
-    mode: "replace" | "append".
-    Comportamento: pull -> edita apenas a seção -> commit -> push.
-    Retorna: {path, updated: true, heading}.
-    Erros: 404 se o heading não existir.
+    """Substitui ou anexa conteúdo em uma seção específica de uma nota.
+
+    Use quando quiser editar apenas uma parte da nota, sem tocar no resto.
+
+    Args:
+        path: caminho relativo da nota, ex: "01-Projetos/nota.md"
+        heading: o heading completo, incluindo os #, ex: "## Ideias"
+        new_content: APENAS o corpo da seção, SEM repetir o heading.
+            A função preserva o heading original.
+        mode: "replace" troca o conteúdo da seção; "append" adiciona ao final dela.
+
+    Exemplo:
+        replace_section("01-Projetos/nota.md", "## Ideias", "texto novo")
+        → a seção "## Ideias" passa a conter "texto novo"
+
+    Nota: assume que o heading é único na nota. Se houver repetidos,
+    a primeira ocorrência é usada.
     """
     try:
         sync_pull()
