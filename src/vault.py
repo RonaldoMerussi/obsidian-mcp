@@ -1,9 +1,5 @@
-"""Filesystem access to the vault: safe path resolution, note read/write, frontmatter parsing.
 
-TODO(ronaldo): implement the bodies below. Signatures and docstrings mirror
-the SPEC (section 7 for resolve_safe_path, section 9 for the tool contracts).
-"""
-
+import enum
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,6 +22,8 @@ class NoteExistsError(FileExistsError):
 class HeadingNotFoundError(ValueError):
     """Raised when update_section can't find the requested heading."""
 
+class AmbiguousHeadingError(ValueError):
+    """Raised when heading appears multiple times and occurrence is not specified."""
 
 @dataclass
 class Note:
@@ -91,24 +89,38 @@ def search_notes(query: str, tag: str | None = None, limit: int = 10) -> list[No
             resultados.append(note)
     return resultados[:limit]
 
+def _heading_level(line: str) -> int:
+    stripped = line.strip()
+    if not stripped.startswith("#"):
+        return 0
+    return len(stripped) - len(stripped.lstrip("#"))
 
-def replace_section(path: str, heading: str, new_content: str, mode: str = "replace") -> None:
-    note = read_note(path)
-    lines = note.content.split("\n")
-    start_index = None
-    for i, line in enumerate(lines):
-        if line.strip() == heading:
-            start_index = i
-            break
-    if start_index is None:
-        raise HeadingNotFoundError(heading)
-    end_index = len(lines)
-    for i in range(start_index + 1, len(lines)):
-        if lines[i].startswith("#"):
-            end_index = i
-            break
+def replace_section(path: str, heading: str, new_content: str, mode: str = "replace", occurrence: int | None = None) -> None:
     if new_content.strip().startswith(heading):
         raise ValueError(f"new_content não deve começar com {heading} - ele é preservado automaticamente")
+    note = read_note(path)
+    lines = note.content.split("\n")
+    matches = [i for i, line in enumerate(lines) if line.strip() == heading]
+    if not matches:
+        raise HeadingNotFoundError(heading)
+    
+    if len(matches) > 1 and occurrence is None:
+        raise AmbiguousHeadingError(
+            f"'{heading}' aparece {len(matches)} vezes na nota. "
+            f"Especifique occurrence (1 a {len(matches)}) para escolher qual.")
+    idx = (occurrence or 1) - 1
+    if idx < 0 or idx >= len(matches):
+        raise ValueError(f"occurrence fora do intervalo: a nota tem {len(matches)} ocorrências de {heading}.")
+    start_index = matches[idx]
+
+    level = _heading_level(heading)
+    end_index = len(lines)
+    for i in range(start_index + 1, len(lines)):
+        lvl = _heading_level(lines[i])
+        if 0 < lvl <= level:
+            end_index = i
+            break
+    
     if mode == "append":
         middle = lines[start_index+1:end_index]
         new_text = "\n".join(lines[:start_index+1] + middle + [new_content] + lines[end_index:])
@@ -117,3 +129,4 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
         new_text = "\n".join(lines[:start_index+1] + middle + lines[end_index:])
     write_note(path, new_text, frontmatter_dict=note.frontmatter, overwrite=True)
     
+

@@ -1,5 +1,6 @@
 from . import vault
 from .sync import sync_pull, sync_write, SyncConflictError
+from .vault import AmbiguousHeadingError
 
 
 
@@ -90,6 +91,10 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
     Args:
         path: caminho relativo da nota, ex: "01-Projetos/nota.md"
         heading: o heading completo, incluindo os #, ex: "## Ideias"
+        occurrence: qual ocorrência do heading editar, quando ele aparece
+            mais de uma vez na nota. 1 = primeira, na ordem do documento.
+            Omita quando o heading for único. Se o heading repetir e você
+            omitir, a função recusa e informa quantas ocorrências existem.
         new_content: APENAS o corpo da seção, SEM repetir o heading.
             A função preserva o heading original.
         mode: "replace" troca o conteúdo da seção; "append" adiciona ao final dela.
@@ -97,6 +102,10 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
     Exemplo:
         replace_section("01-Projetos/nota.md", "## Ideias", "texto novo")
         → a seção "## Ideias" passa a conter "texto novo"
+        Exemplo com heading repetido:
+        # a nota tem "### Checklist" em "## Fase 1" e em "## Fase 2"
+        replace_section("nota.md", "### Checklist", "novo item", occurrence=2)
+        → edita o Checklist da Fase 2; o da Fase 1 fica intacto
 
     Nota: assume que o heading é único na nota. Se houver repetidos,
     a primeira ocorrência é usada.
@@ -114,6 +123,8 @@ def replace_section(path: str, heading: str, new_content: str, mode: str = "repl
         return {"error": str(e), "code": "sync_conflict"}
     except ValueError as e:
         return {"error": str(e), "code": "invalid_content"}
+    except AmbiguousHeadingError as e:
+        return {"error": str(e), "code": "ambiguous_heading"}
     except Exception as e:
         return {"error": f"{type(e).__name__}:{str(e)}", "code": "internal_error"}
     
